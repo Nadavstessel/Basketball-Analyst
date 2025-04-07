@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>מצב משחק</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .tab-buttons {
+      margin-top: 20px;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      margin: 0 5px;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+      background-color: #ccc;
+    }
+
+    .tab-button.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid black;
+      padding: 10px;
+      text-align: center;
+      vertical-align: top;
+    }
+
+    th {
+      background: lightblue;
+    }
+
+    .btn {
+      padding: 5px 8px;
+      margin: 2px;
+      cursor: pointer;
+      font-size: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+    }
+
+    .btn-danger {
+      background: darkred;
+    }
+
+    .controls {
+      margin: 10px;
+    }
+
+    input[type="number"] {
+      width: 50px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div style="position: absolute; top: 10px; left: 10px;">
+    <button class="btn" onclick="toggleLanguage()">🌐 החלף שפה</button>
+  </div>
+  
+  <h2>מצב משחק</h2>
+
+  <div class="tab-buttons">
+    <button class="tab-button active" onclick="switchTab('analysis')">📊 טבלאות ניתוח</button>
+    <button class="tab-button" onclick="switchTab('stats')">📈 סטטיסטיקה</button>
+  </div>
+
+  <div id="analysis" class="tab-content active">
+    <div id="tables-container"></div>
+    <button onclick="addTable()">➕ הוסף טבלה</button>
+  </div>
+
+  <div id="stats" class="tab-content">
+    <div id="stats-table-container"></div>
+    <div class="controls">
+      <button class="btn" onclick="addStatsRow()">➕ הוסף שורה</button>
+      <button class="btn" onclick="removeStatsRow()">➖ מחק שורה</button>
+      <button class="btn" onclick="addStatsColumn()">➕ הוסף עמודה</button>
+      <button class="btn" onclick="removeStatsColumn()">➖ מחק עמודה</button>
+    </div>
+  </div>
+
+  <!-- 📥 כפתורי ייבוא/ייצוא -->
+  <div class="controls" style="margin-bottom: 40px;">
+    <button class="btn" onclick="exportToExcel()">📤 ייצא לאקסל</button>
+    <input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="importFromExcel(event)">
+    <button class="btn" onclick="document.getElementById('excelFile').click()">📥 ייבא מאקסל</button>
+  </div>
+
+  <!-- 📦 טעינת ספריית SheetJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- 🧠 הסקריפט שלך -->
+  <script src="game.js"></script>
+
+</body>
+</html>

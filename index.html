@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ניתוח קבוצות - כדורסל</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      text-align: center;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #333;
+      color: white;
+      padding: 15px;
+      font-size: 24px;
+    }
+
+    main {
+      margin: 20px;
+    }
+
+    .team-entry {
+      margin: 15px auto;
+      width: 260px;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .team-button {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 5px;
+      word-wrap: break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .team-button:hover {
+      background: #0056b3;
+    }
+
+    .btn {
+      margin: 5px 3px;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-danger {
+      background: darkred;
+      color: white;
+      border: none;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label.upload-label {
+      background: #28a745;
+      color: white;
+      padding: 5px 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .logo {
+      max-width: 50px;
+      max-height: 50px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>ניתוח קבוצות - כדורסל</header>
+  <main>
+    <h2>בחר קבוצה לניתוח</h2>
+    <div id="teams-container"></div>
+    <button onclick="addTeam()">➕ הוסף קבוצה</button>
+  </main>
+
+  <script>
+    let teams = [];
+
+    function generateTeamId() {
+      return 'team-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function saveTeams() {
+      localStorage.setItem("teams", JSON.stringify(teams));
+    }
+
+    function loadTeams() {
+      const saved = localStorage.getItem("teams");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+
+        teams = parsed.map(team => {
+          if (typeof team === "string") {
+            return { name: team, logo: null, id: generateTeamId() };
+          }
+          // הוספת id אם לא קיים
+          if (!team.id) {
+            team.id = generateTeamId();
+          }
+          return team;
+        });
+      } else {
+        teams = [
+          { name: "קבוצה 1", logo: null, id: generateTeamId() },
+          { name: "קבוצה 2", logo: null, id: generateTeamId() },
+          { name: "קבוצה 3", logo: null, id: generateTeamId() }
+        ];
+        saveTeams();
+      }
+    }
+
+    function renderTeams() {
+      const container = document.getElementById("teams-container");
+      container.innerHTML = "";
+
+      teams.forEach((team, index) => {
+        const entry = document.createElement("div");
+        entry.className = "team-entry";
+
+        // לוגו
+        if (team.logo) {
+          const img = document.createElement("img");
+          img.src = team.logo;
+          img.className = "logo";
+          entry.appendChild(img);
+        }
+
+        // כפתור מעבר לקבוצה
+        const teamBtn = document.createElement("a");
+        teamBtn.href = `team.html?id=${encodeURIComponent(team.id)}`;
+        teamBtn.className = "team-button";
+        teamBtn.innerText = team.name;
+        entry.appendChild(teamBtn);
+
+        // כפתור שינוי שם
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏️ שנה שם";
+        editBtn.className = "btn";
+        editBtn.onclick = () => {
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = team.name;
+
+          const saveBtn = document.createElement("button");
+          saveBtn.textContent = "💾 שמור";
+          saveBtn.className = "btn";
+          saveBtn.onclick = () => {
+            teams[index].name = input.value.trim();
+            saveTeams();
+            renderTeams();
+          };
+
+          teamBtn.replaceWith(input);
+          editBtn.replaceWith(saveBtn);
+        };
+        entry.appendChild(editBtn);
+
+        // העלאת לוגו
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.id = `file-${index}`;
+        fileInput.onchange = (e) => {
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            teams[index].logo = evt.target.result;
+            saveTeams();
+            renderTeams();
+          };
+          reader.readAsDataURL(e.target.files[0]);
+        };
+
+        const fileLabel = document.createElement("label");
+        fileLabel.htmlFor = `file-${index}`;
+        fileLabel.className = "upload-label";
+        fileLabel.innerText = "העלה לוגו";
+
+        entry.appendChild(fileInput);
+        entry.appendChild(fileLabel);
+
+        // כפתור מחיקה
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "🗑️ מחק קבוצה";
+        deleteBtn.className = "btn btn-danger";
+        deleteBtn.onclick = () => {
+          if (confirm("האם למחוק את הקבוצה?")) {
+            teams.splice(index, 1);
+            saveTeams();
+            renderTeams();
+          }
+        };
+        entry.appendChild(deleteBtn);
+
+        container.appendChild(entry);
+      });
+    }
+
+    function addTeam() {
+      teams.push({ name: "קבוצה חדשה", logo: null, id: generateTeamId() });
+      saveTeams();
+      renderTeams();
+    }
+
+    loadTeams();
+    renderTeams();
+  </script>
+</body>
+</html>

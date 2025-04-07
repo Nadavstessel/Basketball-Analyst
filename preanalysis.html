@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ניתוח לפני משחק</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      background-color: #f4f4f4;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #333;
+      color: white;
+      padding: 15px;
+      font-size: 24px;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: #ddd;
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      background: #ccc;
+      margin: 2px;
+      border-radius: 4px 4px 0 0;
+    }
+    .tab.active {
+      background: white;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+      padding: 20px;
+      background: white;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .match-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin: 10px auto;
+    }
+    .match-button {
+      padding: 10px 16px;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    .btn {
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-danger {
+      background-color: #8B0000;
+      color: white;
+    }
+    .edit-name-box {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .edit-name-box input {
+      padding: 4px;
+      font-size: 14px;
+      width: 150px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>ניתוח לפני משחק</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('games')">📊 ניתוח משחקים</div>
+  <div class="tab" onclick="switchTab('drills')">📘 תרגילים</div>
+</div>
+
+<div id="games" class="tab-content active">
+  <button class="btn btn-primary" onclick="addMatch()">➕ הוסף משחק</button>
+  <div id="matches-container"></div>
+</div>
+
+<div id="drills" class="tab-content">
+  <p>כאן יופיעו תרגילים (בשלב הבא)</p>
+</div>
+
+<script>
+const teamId = new URLSearchParams(window.location.search).get("team") || "default";
+const storageKey = "preMatches_" + teamId;
+
+function switchTab(id) {
+  document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+  document.querySelector(".tab[onclick*='" + id + "']").classList.add("active");
+  document.getElementById(id).classList.add("active");
+}
+
+function generateMatchId() {
+  return 'match-' + Math.random().toString(36).substr(2, 9);
+}
+
+function addMatch() {
+  const matches = JSON.parse(localStorage.getItem(storageKey) || "[]");
+  const id = generateMatchId();
+  const newMatch = { id, name: "משחק חדש" };
+  matches.push(newMatch);
+  localStorage.setItem(storageKey, JSON.stringify(matches));
+  renderMatches();
+}
+
+function deleteMatch(id) {
+  const matches = JSON.parse(localStorage.getItem(storageKey) || "[]");
+  const updated = matches.filter(m => m.id !== id);
+  localStorage.setItem(storageKey, JSON.stringify(updated));
+  localStorage.removeItem("preMatchTables_" + teamId + "_" + id);
+  renderMatches();
+}
+
+function renderMatches() {
+  const container = document.getElementById("matches-container");
+  container.innerHTML = "";
+  const matches = JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+  matches.forEach(match => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "match-container";
+
+    const button = document.createElement("button");
+    button.className = "match-button";
+    button.textContent = match.name;
+    button.onclick = () => window.location.href = `match.html?id=${encodeURIComponent(match.id)}&team=${encodeURIComponent(teamId)}`;
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "btn btn-primary";
+    editBtn.innerHTML = "✏️ שנה שם";
+    editBtn.onclick = () => {
+      const inputBox = document.createElement("div");
+      inputBox.className = "edit-name-box";
+      const input = document.createElement("input");
+      input.value = match.name;
+      const save = document.createElement("button");
+      save.className = "btn btn-primary";
+      save.innerText = "✔️";
+      save.onclick = () => {
+        match.name = input.value.trim() || "משחק";
+        localStorage.setItem(storageKey, JSON.stringify(matches));
+        renderMatches();
+      };
+      inputBox.appendChild(input);
+      inputBox.appendChild(save);
+      wrapper.innerHTML = "";
+      wrapper.appendChild(button);
+      wrapper.appendChild(inputBox);
+      wrapper.appendChild(delBtn);
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn btn-danger";
+    delBtn.innerText = "🗑️ מחק";
+    delBtn.onclick = () => deleteMatch(match.id);
+
+    wrapper.appendChild(button);
+    wrapper.appendChild(editBtn);
+    wrapper.appendChild(delBtn);
+    container.appendChild(wrapper);
+  });
+}
+
+renderMatches();
+</script>
+
+</body>
+</html>

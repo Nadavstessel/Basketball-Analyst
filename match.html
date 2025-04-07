@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>טבלאות ניתוח למשחק</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      text-align: center;
+      background: #f4f4f4;
+    }
+    table {
+      margin: auto;
+      background: white;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 10px;
+      vertical-align: top;
+    }
+    input[type="number"], textarea {
+      text-align: center;
+      margin: 2px;
+    }
+    textarea {
+      resize: vertical;
+    }
+    .btn {
+      padding: 5px 10px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    .btn-controls-global {
+      margin-top: 20px;
+    }
+    .btn-controls-local {
+      margin-top: 10px;
+    }
+    .cell-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .change-controls {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+    .draggable-wrapper {
+      border: 2px dashed transparent;
+      margin-bottom: 30px;
+    }
+    .draggable-wrapper.drag-over {
+      border-color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="match-name">טוען...</div>
+  <div id="tables-container"></div>
+  <div class="btn-controls-global">
+    <button class="btn" onclick="addDrillTable()">➕ הוסף טבלת תרגילים</button>
+    <button class="btn" onclick="addAnalysisTable()">➕ הוסף טבלת ניתוח</button>
+    <button class="btn" onclick="addTextTable()">➕ הוסף טבלת טקסט</button>
+  </div>
+  <script src="match_full_script_with_row_col_drag.js"></script>
+</body>
+</html>

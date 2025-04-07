@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>בחר פעולה לקבוצה</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      text-align: center;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    .team-info {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .team-logo {
+      max-width: 100px;
+      max-height: 100px;
+      display: block;
+      margin: 0 auto 10px;
+    }
+
+    .team-name {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .action-button {
+      padding: 15px 25px;
+      font-size: 18px;
+      margin: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+    }
+
+    .btn-analysis {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-game {
+      background: #28a745;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="team-info">
+    <img id="team-logo" class="team-logo" style="display:none;" />
+    <div id="team-name" class="team-name">טוען שם קבוצה...</div>
+  </div>
+
+  <div>
+    <button class="action-button btn-analysis" onclick="goTo('preanalysis.html')">📊 ניתוח לפני משחק</button>
+    <button class="action-button btn-game" onclick="goTo('game.html')">🏀 מצב משחק</button>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const teamId = params.get("id");
+
+    function goTo(page) {
+  const param = (page === "game.html") ? "id" : "team";
+      window.location.href = `${page}?${param}=${encodeURIComponent(teamId)}`;
+    }
+
+    function loadTeamInfo() {
+      const teams = JSON.parse(localStorage.getItem("teams") || "[]");
+      const team = teams.find(t => t.id === teamId);
+
+      if (!team) {
+        document.getElementById("team-name").innerText = "קבוצה לא נמצאה";
+        return;
+      }
+
+      document.getElementById("team-name").innerText = team.name;
+
+      if (team.logo) {
+        const logo = document.getElementById("team-logo");
+        logo.src = team.logo;
+        logo.style.display = "block";
+      }
+    }
+
+    loadTeamInfo();
+  </script>
+
+</body>
+</html>
