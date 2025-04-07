@@ -1,10 +1,23 @@
-
-// === זיהוי מזהה קבוצה מה-URL ושימוש בו באחסון נתונים ===
-function getTeamId() {
+// === זיהוי מזהי קבוצה ומשחק מה-URL ===
+function getParams() {
   const params = new URLSearchParams(window.location.search);
-  return params.get("id") || "default";
+  return {
+    teamId: params.get("team") || "default",
+    gameId: params.get("game") || null
+  };
 }
-const teamId = getTeamId();
+
+const { teamId, gameId } = getParams();
+
+// הצגת הודעה אם חסר מזהה משחק
+if (!gameId) {
+  const warning = document.createElement("div");
+  warning.innerText = "לא נבחר משחק – אין אפשרות לטעון נתונים.";
+  warning.style.color = "red";
+  warning.style.marginTop = "20px";
+  warning.style.fontSize = "18px";
+  document.body.appendChild(warning);
+}
 
 // מעבר בין טאבים
 function switchTab(tab) {
@@ -21,40 +34,106 @@ function switchTab(tab) {
     const input = document.createElement("input");
     input.type = "number";
     input.value = "0";
-    input.style.width = "50px";
+    input.style.width = "60px";
     input.style.textAlign = "center";
+    input.style.fontSize = "18px";
     input.oninput = saveAll;
   
-    const amounts = [1, 2, 3];
-    const buttonsRow = document.createElement("div");
-    buttonsRow.style.display = "flex";
-    buttonsRow.style.flexWrap = "wrap";
-    buttonsRow.style.justifyContent = "center";
+    const cellContainer = document.createElement("div");
+    cellContainer.style.position = "relative";
+    cellContainer.style.display = "flex";
+    cellContainer.style.flexDirection = "column";
+    cellContainer.style.alignItems = "center";
   
-    amounts.forEach(amount => {
-      const plus = document.createElement("button");
-      plus.className = "btn";
-      plus.innerText = `+${amount}`;
-      plus.onclick = () => {
-        input.value = parseInt(input.value) + amount;
+    const controlsContainer = document.createElement("div");
+    controlsContainer.style.display = "flex";
+    controlsContainer.style.flexWrap = "wrap";
+    controlsContainer.style.justifyContent = "center";
+    controlsContainer.style.gap = "10px";
+    controlsContainer.style.marginTop = "6px";
+  
+    function createControlSet(defaultAmount = 1) {
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "flex";
+      wrapper.style.flexDirection = "column";
+      wrapper.style.alignItems = "center";
+      wrapper.style.gap = "4px";
+      wrapper.style.border = "1px solid lightgray";
+      wrapper.style.padding = "6px";
+      wrapper.style.borderRadius = "6px";
+  
+      const buttonRow = document.createElement("div");
+      buttonRow.style.display = "flex";
+      buttonRow.style.gap = "6px";
+  
+      const amountInput = document.createElement("input");
+      amountInput.type = "number";
+      amountInput.value = defaultAmount;
+      amountInput.style.width = "40px";
+      amountInput.style.textAlign = "center";
+  
+      const plusBtn = document.createElement("button");
+      plusBtn.className = "btn";
+      plusBtn.textContent = "+";
+      plusBtn.style.fontSize = "16px";
+      plusBtn.style.width = "35px";
+      plusBtn.onclick = () => {
+        input.value = parseInt(input.value) + parseInt(amountInput.value);
         saveAll();
       };
   
-      const minus = document.createElement("button");
-      minus.className = "btn";
-      minus.innerText = `-${amount}`;
-      minus.onclick = () => {
-        input.value = parseInt(input.value) - amount;
+      const minusBtn = document.createElement("button");
+      minusBtn.className = "btn";
+      minusBtn.textContent = "-";
+      minusBtn.style.fontSize = "16px";
+      minusBtn.style.width = "35px";
+      minusBtn.onclick = () => {
+        input.value = parseInt(input.value) - parseInt(amountInput.value);
         saveAll();
       };
   
-      buttonsRow.appendChild(plus);
-      buttonsRow.appendChild(minus);
-    });
+      buttonRow.appendChild(minusBtn);
+      buttonRow.appendChild(plusBtn);
+      wrapper.appendChild(buttonRow);
+      wrapper.appendChild(amountInput);
+  
+      return wrapper;
+    }
+  
+    controlsContainer.appendChild(createControlSet());
+  
+    const actionsRow = document.createElement("div");
+    actionsRow.style.display = "flex";
+    actionsRow.style.justifyContent = "space-between";
+    actionsRow.style.width = "100%";
+    actionsRow.style.marginTop = "8px";
+  
+    const addControlBtn = document.createElement("button");
+    addControlBtn.className = "btn";
+    addControlBtn.textContent = "➕ הוסף כפתור";
+    addControlBtn.onclick = () => {
+      controlsContainer.appendChild(createControlSet());
+    };
+  
+    const deleteControlBtn = document.createElement("button");
+    deleteControlBtn.className = "btn";
+    deleteControlBtn.textContent = "🗑️ מחק כפתור";
+    deleteControlBtn.onclick = () => {
+      if (controlsContainer.children.length > 1) {
+        controlsContainer.removeChild(controlsContainer.lastChild);
+        saveAll();
+      }
+    };
+  
+    actionsRow.appendChild(addControlBtn);
+    actionsRow.appendChild(deleteControlBtn);
   
     cell.appendChild(input);
-    cell.appendChild(buttonsRow);
+    cellContainer.appendChild(controlsContainer);
+    cellContainer.appendChild(actionsRow);
+    cell.appendChild(cellContainer);
   }
+  
   
   function addTable() {
     const container = document.getElementById("tables-container");
@@ -302,12 +381,12 @@ function button(text, onclick, extraClass = "") {
       tables.push({ title, headers, rows });
     });
   
-    localStorage.setItem(`analysisTables_${teamId}`, JSON.stringify(tables));
-    localStorage.setItem(`gameStats_${teamId}`, JSON.stringify(statsData));
+    localStorage.setItem(`analysisTables_${teamId}_${gameId}`, JSON.stringify(tables));
+    localStorage.setItem(`gameStats_${teamId}_${gameId}`, JSON.stringify(statsData));
   }
   
   function loadAll() {
-    const savedAnalysis = localStorage.getItem(`analysisTables_${teamId}`);
+    const savedAnalysis = localStorage.getItem(`analysisTables_${teamId}_${gameId}`);
     if (savedAnalysis) {
       const tables = JSON.parse(savedAnalysis);
       tables.forEach(data => {
@@ -409,7 +488,7 @@ function button(text, onclick, extraClass = "") {
       });
     }
   
-    const savedStats = localStorage.getItem(`gameStats_${teamId}`);
+    const savedStats = localStorage.getItem(`gameStats_${teamId}_${gameId}`);
     if (savedStats) {
       statsData = JSON.parse(savedStats);
     }
@@ -497,15 +576,15 @@ function exportToExcel() {
         }
       });
       if (currentTable) parsedAnalysis.push(currentTable);
-      localStorage.setItem(`analysisTables_${teamId}`, JSON.stringify(parsedAnalysis));
-  
+      localStorage.setItem(`analysisTables_${teamId}_${gameId}_${gameId}`, JSON.stringify(parsedAnalysis));
+
       // טאב סטטיסטיקה
       const statsSheet = XLSX.utils.sheet_to_json(workbook.Sheets["סטטיסטיקה"], { header: 1 });
       statsData = {
         headers: statsSheet[0],
         rows: statsSheet.slice(1).map(row => row.map(val => val.toString()))
       };
-      localStorage.setItem(`gameStats_${teamId}`, JSON.stringify(statsData));
+      localStorage.setItem(`gameStats_${teamId}_${gameId}`, JSON.stringify(statsData));
   
       // רענון
       loadAll();
@@ -574,6 +653,4 @@ function exportToExcel() {
       }
     });
   }
-  
-  
   

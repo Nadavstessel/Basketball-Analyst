@@ -63,7 +63,7 @@
 
   <div>
     <button class="action-button btn-analysis" onclick="goTo('preanalysis.html')">📊 ניתוח לפני משחק</button>
-    <button class="action-button btn-game" onclick="goTo('game.html')">🏀 מצב משחק</button>
+    <button class="action-button btn-game" onclick="goTo('game_selection.html')">🏀 מצב משחק</button>
   </div>
 
   <script>
@@ -71,9 +71,8 @@
     const teamId = params.get("id");
 
     function goTo(page) {
-  const param = (page === "game.html") ? "id" : "team";
-      window.location.href = `${page}?${param}=${encodeURIComponent(teamId)}`;
-    }
+  window.location.href = `${page}?team=${encodeURIComponent(teamId)}`;
+}
 
     function loadTeamInfo() {
       const teams = JSON.parse(localStorage.getItem("teams") || "[]");
